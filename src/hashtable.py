@@ -23,7 +23,7 @@ class HashTable:
 
         You may replace the Python hash with DJB2 as a stretch goal.
         '''
-        return hash(key)
+        return self._hash_djb2(key)
 
 
     def _hash_djb2(self, key):
@@ -32,7 +32,10 @@ class HashTable:
 
         OPTIONAL STRETCH: Research and implement DJB2
         '''
-        pass
+        hash = 5381
+        for x in key:
+            hash = ((hash << 5) + hash) + ord(x)
+        return hash & 0xFFFFFFFF
 
 
     def _hash_mod(self, key):
@@ -51,7 +54,19 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        hash_key = self._hash_mod(key)
+        if self.storage[hash_key] == None:
+            self.storage[hash_key] = LinkedPair(key, value)
+        else:
+            node = self.storage[hash_key]
+
+            while node.next is not None and node.key != key:
+                node = node.next
+
+            if node.key == key:
+                node.value = value
+            else:
+                node.next = LinkedPair(key, value)
 
 
 
@@ -63,7 +78,19 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        hash_key = self._hash_mod(key)
+        node = self.storage[hash_key]
+        if node.key == key:
+            self.storage[hash_key] = node.next
+        else:
+            while node.next is not None and node.next.key != key:
+                node = node.next
+
+            if node.next.key == key:
+                node.next = node.next.next
+            else:
+                print("The key was not found.")
+
 
 
     def retrieve(self, key):
@@ -74,7 +101,15 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        hash_key = self._hash_mod(key)
+        node = self.storage[hash_key]
+        while node is not None and node.next is not None and node.key != key:
+            node = node.next
+
+        if node is not None and node.key == key:
+            return node.value
+        else:
+            return None
 
 
     def resize(self):
@@ -84,7 +119,14 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        old_storage = self.storage
+        self.capacity = self.capacity * 2
+        self.storage = [None] * self.capacity
+        for i in range(len(old_storage)):
+            node = old_storage[i]
+            while node is not None:
+                self.insert(node.key, node.value)
+                node = node.next
 
 
 
